@@ -1,9 +1,6 @@
 package es.usc.enso.mvprjgrp31;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 public class Maquina {
 
@@ -71,5 +68,27 @@ public class Maquina {
         return true;
 
     }
+
+	public int getId() {
+		return id;
+	}
+
+	public Coordenadas getCoordenadas() {
+		return coordenadas;
+	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Maquina))  return false;
+        Maquina other = (Maquina) obj;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+
 
 }

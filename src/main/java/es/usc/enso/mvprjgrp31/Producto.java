@@ -24,4 +24,17 @@ public class Producto {
         return id;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Producto)) return false;
+        Producto other = (Producto) obj;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+
 }
