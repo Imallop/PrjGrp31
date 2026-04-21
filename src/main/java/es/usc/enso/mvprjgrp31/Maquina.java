@@ -20,4 +20,26 @@ public class Maquina {
 
     }
 
+	public int getId() {
+		return id;
+	}
+
+	public Coordenadas getCoordenadas() {
+		return coordenadas;
+	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Maquina))  return false;
+        Maquina other = (Maquina) obj;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+
+
 }
