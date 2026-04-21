@@ -1,6 +1,9 @@
 package es.usc.enso.mvprjgrp31;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class Maquina {
 
@@ -17,6 +20,55 @@ public class Maquina {
     public Map<Producto,Integer> consultarStock(){
 
         return stock;
+
+    }
+
+    public Map<Producto,Integer> consultarReposiciones(){
+
+        Map<Producto,Integer> reposiciones = new HashMap<>();
+
+        for(Map.Entry<Producto,Integer> entry : stock.entrySet()){
+
+            if(entry.getValue() < Constantes.STOCK_MINIMO){
+
+                reposiciones.put(entry.getKey(),Constantes.STOCK_MAXIMO - entry.getValue());
+
+            }
+
+        }
+
+        return reposiciones;
+
+    }
+
+    public void venta(String nombreProducto) throws IllegalStateException,NoSuchElementException{
+
+        for(Map.Entry<Producto,Integer> entry : stock.entrySet()){
+
+            if(entry.getKey().getNombre().equals(nombreProducto)){
+
+                int cantidad = entry.getValue();
+                if(cantidad <= 0){
+                    throw new IllegalStateException("No hay stock disponible de " + nombreProducto + ".");
+                }
+                entry.setValue(cantidad - 1);
+                return;
+
+            }
+
+        }
+
+        throw new NoSuchElementException("No existe el producto " + nombreProducto + "en esta máquina");
+
+    }
+
+    public boolean recarga(List<Producto> recargar){
+
+        for(Producto producto : recargar){
+            stock.replace(producto,Constantes.STOCK_MAXIMO);
+        }
+
+        return true;
 
     }
 
