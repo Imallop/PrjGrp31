@@ -1,10 +1,13 @@
 package es.usc.enso.mvprjgrp31;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 public class Producto {
 
-    private String nombre;
-    private float precio;
-    private int id;
+    private final String nombre;
+    private final float precio;
+    private final int id;
 
     public Producto(String nombre, float precio, int id) {
         this.nombre = nombre;

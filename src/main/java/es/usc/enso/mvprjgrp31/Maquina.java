@@ -1,12 +1,15 @@
 package es.usc.enso.mvprjgrp31;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class Maquina {
 
-    private int id;
+    private final int id;
     private Map<Producto,Integer> stock;
-    private Coordenadas coordenadas;
+    private final Coordenadas coordenadas;
 
     public Maquina(int id, Map<Producto,Integer> stock, Coordenadas coordenadas) {
         this.id = id;

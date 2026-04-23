@@ -2,9 +2,9 @@ package es.usc.enso.mvprjgrp31;
 
 public class Coordenadas {
 
-    private double latitud;
-    private double longitud;
-    private double altitud;
+    private final double latitud;
+    private final double longitud;
+    private final double altitud;
 
     public Coordenadas(double latitud, double longitud, double altitud) {
         this.latitud = latitud;
