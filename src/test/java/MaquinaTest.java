@@ -48,7 +48,24 @@ public class MaquinaTest {
     @Test
     @DisplayName("Consultar Stock")
     void testConsultarStock() {
+    	HashMap<Producto,Integer> stock = new HashMap<>();
+    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+    	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
+    	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
     	
+    	stock.put(chocolate, Constantes.STOCK_MINIMO);
+    	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
+    	stock.put(bocata, 17);
+    	
+    	HashMap<Producto,Integer> stockSupuesto = new HashMap<>();
+    	stockSupuesto.put(chocolate, Constantes.STOCK_MINIMO);
+    	stockSupuesto.put(kitkat, Constantes.STOCK_MINIMO - 3);
+    	stockSupuesto.put(bocata, 17);
+    	
+    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
+    	Map<Producto,Integer> stockActual = m.consultarStock();
+    	
+    	assertEquals(stockActual, stockSupuesto);
     }
     
     @Test
@@ -69,6 +86,16 @@ public class MaquinaTest {
     	HashMap<Producto,Integer> stock = new HashMap<>();
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
+    }
+    
+    @Test
+    @DisplayName("Cantidad insuficiente, venta")
+    void testIllegalState() {
+    	HashMap<Producto,Integer> stock = new HashMap<>();
+    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+    	stock.put(chocolate, 0);
+    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
+    	assertThrows(IllegalStateException.class, () -> m.venta("Chocolate"));
     }
     
     @Test
