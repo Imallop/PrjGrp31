@@ -3,8 +3,6 @@ package es.usc.enso.mvprjgrp31;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 
@@ -32,16 +30,12 @@ public class Maquina {
 
         for(Map.Entry<Producto,Integer> entry : stock.entrySet()){
 
-            if(entry.getValue() < Constantes.STOCK_MINIMO){
-
+            if(entry.getValue() <= Constantes.STOCK_MINIMO){
+            	
                 reposiciones.put(entry.getKey(),Constantes.STOCK_MAXIMO - entry.getValue());
-
             }
-
         }
-
         return reposiciones;
-
     }
 
     public void venta(String nombreProducto) throws IllegalStateException,NoSuchElementException{
