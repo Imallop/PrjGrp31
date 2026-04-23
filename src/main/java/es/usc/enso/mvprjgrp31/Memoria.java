@@ -13,19 +13,19 @@ public class Memoria {
 		maquinas.add(m);
 	}
 
-	public Maquina getMaquina(int id) {
+	public Maquina getMaquina(int id) throws MachineNotFoundException {
 		for (Maquina m : maquinas) {
 			if (m.getId() == id) {
 				return m;
 			}
 		}
 
-		return null;
+		throw new MachineNotFoundException(id);
 	}
 
-	public Maquina getMaquinaCercana(Coordenadas c) {
+	public Maquina getMaquinaCercana(Coordenadas c) throws MachineNotFoundException {
 		if (maquinas.size() <= 0) {
-			return null;
+			throw new MachineNotFoundException(c);
 		}
 		Maquina mCercana = null;
 		double d = Double.POSITIVE_INFINITY;
