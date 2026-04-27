@@ -1,3 +1,5 @@
+package es.usc.enso.mvprjgrp31;
+
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import es.usc.enso.mvprjgrp31.Producto;
