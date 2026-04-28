@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.time.Instant;
 
 
 public class Maquina {
@@ -30,8 +31,7 @@ public class Maquina {
 
         for(Map.Entry<Producto,Integer> entry : stock.entrySet()){
 
-            if(entry.getValue() <= Constantes.STOCK_MINIMO){
-            	
+            if(entry.getValue() <= Constantes.STOCK_UMBRAL){
                 reposiciones.put(entry.getKey(),Constantes.STOCK_MAXIMO - entry.getValue());
             }
         }
@@ -59,14 +59,14 @@ public class Maquina {
 
     }
 
-    public boolean recarga(List<Producto> recargar){
+    public Map<Instant, List<Producto>> recarga(List<Producto> recargar){
+
+        List<Producto> productosRecargar = consultarReposiciones().keySet().stream().filter(recargar::contains).toList();
 
         for(Producto producto : recargar){
             stock.replace(producto,Constantes.STOCK_MAXIMO);
         }
-
-        return true;
-
+        return Map.of(Instant.now(), productosRecargar);
     }
 
 	public int getId() {

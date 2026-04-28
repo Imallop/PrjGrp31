@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -17,6 +18,8 @@ import es.usc.enso.mvprjgrp31.Constantes;
 import es.usc.enso.mvprjgrp31.Coordenadas;
 import es.usc.enso.mvprjgrp31.Maquina;
 import es.usc.enso.mvprjgrp31.Producto;
+
+import java.time.Instant;
 
 public class MaquinaTest {
 	@Test
@@ -46,7 +49,7 @@ public class MaquinaTest {
     	Maquina m = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85));
         assertNotEquals(null, m);
     }
-    
+
     @Test
     @DisplayName("Consultar Stock")
     void testConsultarStock() {
@@ -122,6 +125,28 @@ public class MaquinaTest {
     	assertFalse(reposiciones.containsKey(bocata));
     	assertEquals(2, reposiciones.size());
     }
+
+	@Test
+	@DisplayName("Recarga")
+	void testRecarga() {
+		HashMap<Producto,Integer> stock = new HashMap<>();
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
+
+		stock.put(chocolate, Constantes.STOCK_MINIMO);
+		stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
+
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
+
+		Map<Instant, List<Producto>> recargaResult = m.recarga(m.consultarReposiciones().keySet().stream().toList());
+		Instant tiempo = recargaResult.keySet().iterator().next();
+		List<Producto> productosRecargados = recargaResult.values().iterator().next();
+
+		assertTrue(m.consultarStock().get(chocolate) == Constantes.STOCK_MAXIMO);
+		assertTrue(m.consultarStock().get(kitkat) == Constantes.STOCK_MAXIMO);
+		assertTrue(tiempo.isBefore(Instant.now()) && tiempo.isAfter(Instant.now().minusSeconds(5)));
+		assertTrue(productosRecargados.size() == 2);
+	}
 }
 
 
