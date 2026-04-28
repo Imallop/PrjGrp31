@@ -31,7 +31,7 @@ public class Maquina {
 
         for(Map.Entry<Producto,Integer> entry : stock.entrySet()){
 
-            if(entry.getValue() <= Constantes.STOCK_UMBRAL){
+            if(entry.getValue() <= Constantes.STOCK_MINIMO){
                 reposiciones.put(entry.getKey(),Constantes.STOCK_MAXIMO - entry.getValue());
             }
         }

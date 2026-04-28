@@ -16,9 +16,13 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Tests para la funcionalidad de gestión de máquinas (anteriormente Memoria)
+ * ahora integrada en MaquinaDAO
+ */
 @ExtendWith(MockitoExtension.class)
 public class MemoriaTest {
-	private Memoria memoria;
+	private MaquinaDAO maquinaDAO;
 
 	@Mock
 	private Maquina maquinaMock;
@@ -31,30 +35,29 @@ public class MemoriaTest {
 
 	@BeforeEach
 	void setUp() {
-		memoria = new Memoria();
+		maquinaDAO = MaquinaDAO.getInstance();
 	}
 
 	@AfterEach
 	void tearDown() {
-		memoria = null;
+		maquinaDAO = null;
 	}
 
 	@Test
 	@DisplayName("add y get dan la misma")
 	void addYGetMismaInstancia() throws Exception {
-		// Arragne
+		// Arrange
 		when(maquinaMock.getId()).thenReturn(7);
 
 		// Act
-		memoria.addMaquina(maquinaMock);
-		Maquina resultado = assertTimeout(Duration.ofMillis(100), () -> memoria.getMaquina(7));
+		maquinaDAO.addMaquina(maquinaMock);
+		Maquina resultado = assertTimeout(Duration.ofMillis(100), () -> maquinaDAO.getMaquina(7));
 
 		// Assert
 		assertAll(
 				() -> assertSame(maquinaMock, resultado),
 				() -> assertEquals(7, resultado.getId()),
-				() -> assertNotNull(resultado)
-		);
+				() -> assertNotNull(resultado));
 	}
 
 	@ParameterizedTest(name = "id {0} -> pos {1}")
@@ -65,35 +68,33 @@ public class MemoriaTest {
 			"3, 2"
 	})
 	void getMaquinaCsv(int id, int index) throws Exception {
-		// Arragne
+		// Arrange
 		Maquina[] maquinas = new Maquina[] {
 				new Maquina(1, new HashMap<>(), new Coordenadas(0.0, 0.0, 0.0)),
 				new Maquina(2, new HashMap<>(), new Coordenadas(1.0, 1.0, 0.0)),
 				new Maquina(3, new HashMap<>(), new Coordenadas(2.0, 2.0, 0.0))
 		};
 		for (Maquina m : maquinas) {
-			memoria.addMaquina(m);
+			maquinaDAO.addMaquina(m);
 		}
 
 		// Act
-		Maquina encontrada = memoria.getMaquina(id);
+		Maquina encontrada = maquinaDAO.getMaquina(id);
 
 		// Assert
 		assertAll(
 				() -> assertSame(maquinas[index], encontrada),
-				() -> assertTrue(encontrada.getId() == id)
-		);
+				() -> assertTrue(encontrada.getId() == id));
 	}
 
 	@Test
 	@DisplayName("getMaquina falla si no encuentra")
 	void getMaquinaNoExiste() {
-		// Arragne
+		// Arrange
 		// Act
 		MachineNotFoundException ex = assertThrows(
 				MachineNotFoundException.class,
-				() -> memoria.getMaquina(99)
-		);
+				() -> maquinaDAO.getMaquina(99));
 
 		// Assert
 		assertTrue(ex.getMessage().contains("Machine not found"));
@@ -103,7 +104,7 @@ public class MemoriaTest {
 	@Test
 	@DisplayName("getMaquinaCercana devuelve máquina más cercana")
 	void cercanaDevuelveMasCerca() throws Exception {
-		// Arragne
+		// Arrange
 		Coordenadas origen = new Coordenadas(0.0, 0.0, 0.0);
 		Coordenadas coordA = new Coordenadas(0.0001, 0.0, 0.0);
 		Coordenadas coordB = new Coordenadas(0.01, 0.0, 0.0);
@@ -113,12 +114,12 @@ public class MemoriaTest {
 		when(maquinaB.getCoordenadas()).thenReturn(coordB);
 		when(maquinaC.getCoordenadas()).thenReturn(coordC);
 
-		memoria.addMaquina(maquinaA);
-		memoria.addMaquina(maquinaB);
-		memoria.addMaquina(maquinaC);
+		maquinaDAO.addMaquina(maquinaA);
+		maquinaDAO.addMaquina(maquinaB);
+		maquinaDAO.addMaquina(maquinaC);
 
 		// Act
-		Maquina resultado = memoria.getMaquinaCercana(origen);
+		Maquina resultado = maquinaDAO.getMaquinaCercana(origen);
 
 		// Assert
 		assertAll(
@@ -126,26 +127,21 @@ public class MemoriaTest {
 				() -> assertArrayEquals(
 						coordA.getCoordenadas(),
 						resultado.getCoordenadas().getCoordenadas(),
-						0.000001
-				),
+						0.000001),
 				() -> assertTrue(
-						Coordenadas.distancia(origen, coordA)
-								< Coordenadas.distancia(origen, coordB)
-				)
-		);
+						Coordenadas.distancia(origen, coordA) < Coordenadas.distancia(origen, coordB)));
 	}
 
 	@Test
 	@DisplayName("cercana sin maquinas")
 	void cercanaSinMaquinas() {
-		// Arragne
+		// Arrange
 		Coordenadas origen = new Coordenadas(0.0, 0.0, 0.0);
 
 		// Act
 		MachineNotFoundException ex = assertThrows(
 				MachineNotFoundException.class,
-				() -> memoria.getMaquinaCercana(origen)
-		);
+				() -> maquinaDAO.getMaquinaCercana(origen));
 
 		// Assert
 		assertTrue(ex.getMessage().contains("Machine not found near coordinates"));
