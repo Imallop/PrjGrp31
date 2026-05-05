@@ -16,10 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import es.usc.enso.mvprjgrp31.Constantes;
-import es.usc.enso.mvprjgrp31.Coordenadas;
-import es.usc.enso.mvprjgrp31.Maquina;
-import es.usc.enso.mvprjgrp31.Producto;
 
 import java.time.Instant;
 
@@ -74,9 +70,11 @@ public class MaquinaTest {
     	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
     	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
 
+
     	stock.put(chocolate, Constantes.STOCK_MINIMO);
     	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
     	stock.put(bocata, 17);
+
 
     	HashMap<Producto,Integer> stockSupuesto = new HashMap<>();
     	stockSupuesto.put(chocolate, Constantes.STOCK_MINIMO);
@@ -97,10 +95,10 @@ public class MaquinaTest {
     	stock.put(chocolate, Constantes.STOCK_MAXIMO);
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	m.venta("Chocolate");
-    	
+
     	assertTrue(m.consultarStock().get(chocolate) == 19);
     }
-    
+
     @Test
     @DisplayName("Elemento no existente, venta")
     void testNoSuchElement() {
@@ -108,7 +106,7 @@ public class MaquinaTest {
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
     }
-    
+
     @Test
     @DisplayName("Cantidad insuficiente, venta")
     void testIllegalState() {
@@ -118,7 +116,7 @@ public class MaquinaTest {
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	assertThrows(IllegalStateException.class, () -> m.venta("Chocolate"));
     }
-    
+
     @Test
     @DisplayName("Consultar Reposiciones")
     void testConsultarReposiciones() {
@@ -126,18 +124,18 @@ public class MaquinaTest {
     	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
     	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
     	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
-    	
+
     	stock.put(chocolate, Constantes.STOCK_MINIMO);
     	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
     	stock.put(bocata, 17);
-    	
+
     	/*HashMap<Producto,Integer> reposicionesSupuestas = new HashMap<>();
     	reposicionesSupuestas.put(chocolate, 15);
     	reposicionesSupuestas.put(kitkat, 18);*/
     	
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	Map<Producto,Integer> reposiciones = m.consultarReposiciones();
-    	
+
     	assertFalse(reposiciones.containsKey(bocata));
     	assertEquals(2, reposiciones.size());
     }
