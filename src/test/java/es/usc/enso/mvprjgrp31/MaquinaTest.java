@@ -14,10 +14,6 @@ import java.util.NoSuchElementException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import es.usc.enso.mvprjgrp31.Constantes;
-import es.usc.enso.mvprjgrp31.Coordenadas;
-import es.usc.enso.mvprjgrp31.Maquina;
-import es.usc.enso.mvprjgrp31.Producto;
 
 import java.time.Instant;
 
