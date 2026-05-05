@@ -1,10 +1,10 @@
 package es.usc.enso.mvprjgrp31;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.time.Instant;
 
 
 public class Maquina {
@@ -12,11 +12,13 @@ public class Maquina {
     private final int id;
     private Map<Producto,Integer> stock;
     private final Coordenadas coordenadas;
+    private final MaquinaDAO maquinaDAO;
 
-    public Maquina(int id, Map<Producto,Integer> stock, Coordenadas coordenadas) {
+    public Maquina(int id, Map<Producto,Integer> stock, Coordenadas coordenadas, MaquinaDAO maquinaDAO) {
         this.id = id;
         this.stock = stock;
         this.coordenadas = coordenadas;
+        this.maquinaDAO = maquinaDAO;
     }
 
     public Map<Producto,Integer> consultarStock(){
@@ -59,14 +61,14 @@ public class Maquina {
 
     }
 
-    public Map<Instant, List<Producto>> recarga(List<Producto> recargar){
+    public void recarga(List<Producto> recargar){
 
         List<Producto> productosRecargar = consultarReposiciones().keySet().stream().filter(recargar::contains).toList();
 
         for(Producto producto : recargar){
             stock.replace(producto,Constantes.STOCK_MAXIMO);
+            maquinaDAO.registrarReposicion(id, producto, Instant.now());
         }
-        return Map.of(Instant.now(), productosRecargar);
     }
 
 	public int getId() {

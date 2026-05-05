@@ -1,12 +1,26 @@
 package es.usc.enso.mvprjgrp31;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.concurrent.ForkJoinPool;
 
 import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.Assert.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -71,9 +86,9 @@ public class MaquinaDAOTest {
 	void getMaquinaCsv(int id, int index) throws Exception {
 		// Arrange
 		Maquina[] maquinas = new Maquina[] {
-				new Maquina(1, new HashMap<>(), new Coordenadas(0.0, 0.0, 0.0)),
-				new Maquina(2, new HashMap<>(), new Coordenadas(1.0, 1.0, 0.0)),
-				new Maquina(3, new HashMap<>(), new Coordenadas(2.0, 2.0, 0.0))
+				new Maquina(1, new HashMap<>(), new Coordenadas(0.0, 0.0, 0.0), maquinaDAO),
+				new Maquina(2, new HashMap<>(), new Coordenadas(1.0, 1.0, 0.0), maquinaDAO),
+				new Maquina(3, new HashMap<>(), new Coordenadas(2.0, 2.0, 0.0), maquinaDAO)
 		};
 		for (Maquina m : maquinas) {
 			maquinaDAO.addMaquina(m);
@@ -148,4 +163,37 @@ public class MaquinaDAOTest {
 		assertTrue(ex.getMessage().contains("Machine not found near coordinates"));
 		assertNotNull(ex);
 	}
+
+    @Test
+    void getMaquinasDevuelveCopia() {
+        MaquinaDAO dao = MaquinaDAO.getInstance();
+
+        ArrayList<Maquina> lista1 = dao.getMaquinas();
+        ArrayList<Maquina> lista2 = dao.getMaquinas();
+
+        assertNotSame(lista1, lista2);
+    }
+
+    @Test
+    void tiempoMaximoCalcularReposicion(){
+        HashMap<Producto,Integer> stock = new HashMap<>();
+    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+    	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
+    	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
+
+    	stock.put(chocolate, Constantes.STOCK_MINIMO);
+    	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
+    	stock.put(bocata, 17);
+
+        Maquina maquina = new Maquina(1, stock, new Coordenadas(0.0, 0.0, 0.0), maquinaDAO);
+        maquinaDAO.addMaquina(maquina);
+
+        maquina.recarga(new ArrayList<>(maquina.consultarReposiciones().keySet()));
+
+        assertTimeoutPreemptively(Duration.ofMillis(10), () -> {
+            for(Entry<Producto,Instant> entrada : maquinaDAO.calcularProximaReposicion(1).entrySet()){
+                System.out.println(entrada.getKey() + "----" + entrada.getValue());
+            }
+        });
+    }
 }
