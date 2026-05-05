@@ -57,22 +57,22 @@ public class MaquinaTest {
     	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
     	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
     	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
-    	
+
     	stock.put(chocolate, Constantes.STOCK_MINIMO);
     	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
     	stock.put(bocata, 17);
-    	
+
     	HashMap<Producto,Integer> stockSupuesto = new HashMap<>();
     	stockSupuesto.put(chocolate, Constantes.STOCK_MINIMO);
     	stockSupuesto.put(kitkat, Constantes.STOCK_MINIMO - 3);
     	stockSupuesto.put(bocata, 17);
-    	
+
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	Map<Producto,Integer> stockActual = m.consultarStock();
-    	
+
     	assertEquals(stockActual, stockSupuesto);
     }
-    
+
     @Test
     @DisplayName("Actualizar Stock")
     void testActualizarStock() {
@@ -81,10 +81,10 @@ public class MaquinaTest {
     	stock.put(chocolate, Constantes.STOCK_MAXIMO);
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	m.venta("Chocolate");
-    	
+
     	assertTrue(m.consultarStock().get(chocolate) == 19);
     }
-    
+
     @Test
     @DisplayName("Elemento no existente, venta")
     void testNoSuchElement() {
@@ -92,7 +92,7 @@ public class MaquinaTest {
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
     }
-    
+
     @Test
     @DisplayName("Cantidad insuficiente, venta")
     void testIllegalState() {
@@ -102,7 +102,7 @@ public class MaquinaTest {
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	assertThrows(IllegalStateException.class, () -> m.venta("Chocolate"));
     }
-    
+
     @Test
     @DisplayName("Consultar Reposiciones")
     void testConsultarReposiciones() {
@@ -110,18 +110,18 @@ public class MaquinaTest {
     	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
     	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
     	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
-    	
+
     	stock.put(chocolate, Constantes.STOCK_MINIMO);
     	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
     	stock.put(bocata, 17);
-    	
+
     	/*HashMap<Producto,Integer> reposicionesSupuestas = new HashMap<>();
     	reposicionesSupuestas.put(chocolate, 15);
     	reposicionesSupuestas.put(kitkat, 18);*/
-    	
+
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85));
     	Map<Producto,Integer> reposiciones = m.consultarReposiciones();
-    	
+
     	assertFalse(reposiciones.containsKey(bocata));
     	assertEquals(2, reposiciones.size());
     }
