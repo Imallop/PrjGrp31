@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -48,6 +49,14 @@ public class MaquinaTest {
     void testNotEquals() {
     	Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	Maquina m2 = new Maquina(2, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+
+        assertNotEquals(m1, m2);
+    }
+    
+    @Test
+    void testNotSameClass() {
+    	Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+    	ArrayList<Maquina> m2 = new ArrayList<>();
 
         assertNotEquals(m1, m2);
     }
@@ -101,6 +110,24 @@ public class MaquinaTest {
     	HashMap<Producto,Integer> stock = new HashMap<>();
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
+    }
+
+	@Test
+    @DisplayName("No coincidencia al recorrer el hashMap")
+    void hashMapSinCoincidencia() {
+    	HashMap<Producto,Integer> stock = new HashMap<>();
+		stock.put(new Producto("Condones", (float) 6.99, 1), Constantes.STOCK_MAXIMO);
+    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+    	assertThrows(NoSuchElementException.class, () -> m.venta("Condones"));
+    }
+	
+	@Test
+    @DisplayName("Coincidencia al recorrer el hashMap")
+    void hashMapConCoincidencia() {
+    	HashMap<Producto,Integer> stock = new HashMap<>();
+		stock.put(new Producto("Chocolate", (float) 6.99, 1), Constantes.STOCK_MAXIMO);
+    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+    	assertThrows(NoSuchElementException.class, () -> m.venta("Condones"));
     }
 
     @Test
