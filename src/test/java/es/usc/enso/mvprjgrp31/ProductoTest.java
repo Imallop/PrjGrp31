@@ -1,6 +1,9 @@
 package es.usc.enso.mvprjgrp31;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 
 class ProductoTest {
@@ -23,6 +26,14 @@ class ProductoTest {
     void testNotEquals() {
         Producto p1 = new Producto("Chocolate", (float)25.0, 1);
         Producto p2 = new Producto("KitKat", (float)30.0, 2);
+
+        assertNotEquals(p1, p2);
+    }
+
+    @Test
+    void testNotSameClass() {
+        Producto p1 = new Producto("Chocolate", (float)25.0, 1);
+        ArrayList<Producto> p2 = new ArrayList<>();
 
         assertNotEquals(p1, p2);
     }
