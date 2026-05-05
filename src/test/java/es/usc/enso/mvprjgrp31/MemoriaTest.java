@@ -89,17 +89,17 @@ public class MemoriaTest {
 	}
 
 	@Test
-	@DisplayName("getMaquina falla si no encuentra")
-	void getMaquinaNoExiste() {
-		// Arrange
-		// Act
-		MachineNotFoundException ex = assertThrows(
-				MachineNotFoundException.class,
-				() -> maquinaDAO.getMaquina(99));
-
-		// Assert
-		assertTrue(ex.getMessage().contains("Machine not found"));
-		assertNull(ex.getCause());
+	@DisplayName("getMaquina falla si no encuentra (con fail)")
+	void getMaquinaNoExisteConFail() {
+		try {
+			maquinaDAO.getMaquina(99);
+			fail("Se esperaba MachineNotFoundException y no se lanzó ninguna excepción");
+		} catch (MachineNotFoundException ex) {
+			assertTrue(ex.getMessage().contains("Machine not found"));
+			assertNull(ex.getCause());
+		} catch (Exception ex) {
+			fail("Se lanzó una excepción incorrecta: " + ex.getClass().getSimpleName());
+		}
 	}
 
 	@Test
