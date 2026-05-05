@@ -36,6 +36,7 @@ public class MemoriaTest {
 	@BeforeEach
 	void setUp() {
 		maquinaDAO = MaquinaDAO.getInstance();
+		maquinaDAO.clear();
 	}
 
 	@AfterEach

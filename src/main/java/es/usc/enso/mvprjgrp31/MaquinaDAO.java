@@ -95,4 +95,9 @@ public class MaquinaDAO {
 
         return proximaReposicion;
     }
+
+    public void clear() {
+        maquinas.clear();
+        historialReposiciones.clear();
+    }
 }
