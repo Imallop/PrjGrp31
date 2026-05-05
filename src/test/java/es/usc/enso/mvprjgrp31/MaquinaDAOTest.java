@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.ForkJoinPool;
 
 import org.junit.jupiter.api.AfterEach;
 
@@ -191,9 +190,7 @@ public class MaquinaDAOTest {
         maquina.recarga(new ArrayList<>(maquina.consultarReposiciones().keySet()));
 
         assertTimeoutPreemptively(Duration.ofMillis(10), () -> {
-            for(Entry<Producto,Instant> entrada : maquinaDAO.calcularProximaReposicion(1).entrySet()){
-                System.out.println(entrada.getKey() + "----" + entrada.getValue());
-            }
+            maquinaDAO.calcularProximaReposicion(1).entrySet();
         });
     }
 }

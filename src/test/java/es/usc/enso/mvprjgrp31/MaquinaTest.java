@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -15,9 +14,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-
-import java.time.Instant;
 
 public class MaquinaTest {
 
@@ -132,7 +128,7 @@ public class MaquinaTest {
     	/*HashMap<Producto,Integer> reposicionesSupuestas = new HashMap<>();
     	reposicionesSupuestas.put(chocolate, 15);
     	reposicionesSupuestas.put(kitkat, 18);*/
-    	
+
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	Map<Producto,Integer> reposiciones = m.consultarReposiciones();
 
