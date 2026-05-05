@@ -29,8 +29,10 @@ public class Producto {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Producto)) return false;
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Producto))
+            return false;
         Producto other = (Producto) obj;
         return id == other.id;
     }

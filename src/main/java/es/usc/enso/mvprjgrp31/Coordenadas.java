@@ -25,7 +25,7 @@ public class Coordenadas {
     }
 
     public double[] getCoordenadas() {
-        return new double[]{latitud, longitud, altitud};
+        return new double[] { latitud, longitud, altitud };
     }
 
     public static double distancia(Coordenadas a, Coordenadas b) {
