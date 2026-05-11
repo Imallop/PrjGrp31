@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -116,9 +118,11 @@ public class MaquinaTest {
     @DisplayName("No coincidencia al recorrer el hashMap")
     void hashMapSinCoincidencia() {
     	HashMap<Producto,Integer> stock = new HashMap<>();
-		stock.put(new Producto("Condones", (float) 6.99, 1), Constantes.STOCK_MAXIMO);
+    	Producto p = new Producto("Pepsi", (float) 6.99, 1);
+		stock.put(p, Constantes.STOCK_MAXIMO);
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	assertThrows(NoSuchElementException.class, () -> m.venta("Condones"));
+    	m.venta("Pepsi");
+    	assertEquals(Constantes.STOCK_MAXIMO-1,m.consultarStock().get(p));
     }
 	
 	@Test
@@ -127,7 +131,7 @@ public class MaquinaTest {
     	HashMap<Producto,Integer> stock = new HashMap<>();
 		stock.put(new Producto("Chocolate", (float) 6.99, 1), Constantes.STOCK_MAXIMO);
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	assertThrows(NoSuchElementException.class, () -> m.venta("Condones"));
+    	assertThrows(NoSuchElementException.class, () -> m.venta("Pepsi"));
     }
 
     @Test
@@ -180,6 +184,43 @@ public class MaquinaTest {
 		assertTrue(m.consultarStock().get(chocolate) == Constantes.STOCK_MAXIMO);
 		assertTrue(m.consultarStock().get(kitkat) == Constantes.STOCK_MAXIMO);
 	}
+
+	// NUEVOS TESTS — Cobertura de decisión D4
+	// D4: recargar.contains(producto)  [filtro del stream en recarga()]
+	// -----------------------------------------------------------------------
+ 
+	@Test
+	void d4_recarga_productoNecesitaReposicionYEstaEnLista() {
+		// Ambas ramas ejercidas: chocolate SÍ está en recargar (TRUE),
+		// la lista tiene un único elemento por lo que el filtro solo evalúa TRUE.
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		stock.put(chocolate, Constantes.STOCK_MINIMO); // necesita reposición
+ 
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		m.recarga(List.of(chocolate));
+ 
+		assertEquals(Constantes.STOCK_MAXIMO, m.consultarStock().get(chocolate),
+				"El producto debe alcanzar STOCK_MAXIMO tras la recarga");
+	}
+ 
+	@Test
+	void d4_recarga_productoNoNecesitaReposicionNoDebeRecargarse() {
+		// El filtro del stream evalúa FALSE para este producto:
+		// está en 'recargar' pero su stock >= STOCK_MAXIMO, así que
+		// 'productosRecargar' estará vacío y no debería tocarse.
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		stock.put(chocolate, Constantes.STOCK_MAXIMO); // NO necesita reposición
+ 
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		int stockAntes = m.consultarStock().get(chocolate);
+		m.recarga(List.of(chocolate));
+ 
+		assertEquals(stockAntes, m.consultarStock().get(chocolate),
+				"Un producto con stock suficiente no debe ser recargado");
+	}
+
 }
 
 

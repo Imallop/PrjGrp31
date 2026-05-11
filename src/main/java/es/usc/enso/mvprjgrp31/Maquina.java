@@ -29,6 +29,10 @@ public class Maquina {
 
     public Map<Producto,Integer> consultarReposiciones(){
 
+        if (stock == null || stock.isEmpty()) {
+            return new HashMap<>();
+        }
+
         Map<Producto,Integer> reposiciones = new HashMap<>();
 
         for(Map.Entry<Producto,Integer> entry : stock.entrySet()){

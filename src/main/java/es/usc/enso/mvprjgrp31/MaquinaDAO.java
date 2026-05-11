@@ -35,13 +35,18 @@ public class MaquinaDAO {
         throw new MachineNotFoundException(id);
     }
 
-    public Maquina getMaquinaCercana(Coordenadas c) throws MachineNotFoundException {
+    public Maquina getMaquinaCercana(Coordenadas c, int idAExcluir) throws MachineNotFoundException {
         if (maquinas.size() <= 0) {
             throw new MachineNotFoundException(c);
         }
         Maquina mCercana = null;
         double d = Double.POSITIVE_INFINITY;
         for (Maquina m : maquinas) {
+
+            if (m.getId() == idAExcluir) {
+                continue;
+            }
+
             double dAux = Coordenadas.distancia(c, m.getCoordenadas());
             if (dAux < d) {
                 mCercana = m;
@@ -94,6 +99,39 @@ public class MaquinaDAO {
         }
 
         return proximaReposicion;
+    }
+
+    public String sugerirDesplazamientoStock(int idObjetivo, Producto p) throws MachineNotFoundException {
+        Maquina objetivo = getMaquina(idObjetivo);
+        int stockObj = objetivo.consultarStock().getOrDefault(p, 0);
+
+        if (stockObj <= Constantes.STOCK_MINIMO) {
+                // Intentamos buscar la más cercana excluyendo la actual
+                Maquina cercana = getMaquinaCercana(objetivo.getCoordenadas(), idObjetivo);
+
+                if (cercana == null) {
+                    return "SIN_PROVEEDOR_CERCANO";
+                }
+
+                int stockCercana = cercana.consultarStock().getOrDefault(p, 0);
+
+                if (stockCercana > Constantes.STOCK_MAXIMO) {
+                    double dist = Coordenadas.distancia(objetivo.getCoordenadas(), cercana.getCoordenadas());
+
+                    if (dist < 1000.0) {
+
+                        if (objetivo.getCoordenadas().getAltitud() > 2500.0 &&
+                            cercana.getCoordenadas().getAltitud() > 2500.0) {
+                            return "REQUIERE_TRANSPORTE_ESPECIAL_ALTITUD";
+                        }
+
+                        return "TRANSFERENCIA_VIABLE";
+                    }
+                    return "DISTANCIA_EXCESIVA";
+                }
+                return "SIN_PROVEEDOR_CERCANO";
+        }
+        return "STOCK_SUFICIENTE";
     }
 
     public void clear() {
