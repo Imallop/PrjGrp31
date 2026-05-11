@@ -34,85 +34,83 @@ public class MaquinaTest {
 	}
 
 	@Test
-    void testEqualsReflexivo() {
-        Maquina m = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-        assertEquals(m, m);
-    }
+	void testEqualsReflexivo() {
+		Maquina m = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		assertEquals(m, m);
+	}
 
-    @Test
-    void testEqualsMismoContenido() {
-    	Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	Maquina m2 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+	@Test
+	void testEqualsMismoContenido() {
+		Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		Maquina m2 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
 
-        assertEquals(m1, m2);
-    }
+		assertEquals(m1, m2);
+	}
 
-    @Test
-    void testNotEquals() {
-    	Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	Maquina m2 = new Maquina(2, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+	@Test
+	void testNotEquals() {
+		Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		Maquina m2 = new Maquina(2, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
 
-        assertNotEquals(m1, m2);
-    }
-    
-    @Test
-    void testNotSameClass() {
-    	Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	ArrayList<Maquina> m2 = new ArrayList<>();
+		assertNotEquals(m1, m2);
+	}
 
-        assertNotEquals(m1, m2);
-    }
+	@Test
+	void testNotSameClass() {
+		Maquina m1 = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		ArrayList<Maquina> m2 = new ArrayList<>();
 
-    @Test
-    void testEqualsNull() {
-    	Maquina m = new Maquina(1, new HashMap<>(), new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-        assertNotEquals(null, m);
-    }
+		assertNotEquals(m1, m2);
+	}
 
-    @Test
-    @DisplayName("Consultar Stock")
-    void testConsultarStock() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
-    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
-    	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
-    	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
+	@Test
+	void testEqualsNull() {
+		Maquina m = new Maquina(1, new HashMap<>(), new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		assertNotEquals(null, m);
+	}
 
+	@Test
+	@DisplayName("Consultar Stock")
+	void testConsultarStock() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
+		Producto bocata = new Producto("Bocata", (float) 40.0, 3);
 
-    	stock.put(chocolate, Constantes.STOCK_MINIMO);
-    	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
-    	stock.put(bocata, 17);
+		stock.put(chocolate, Constantes.STOCK_MINIMO);
+		stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
+		stock.put(bocata, 17);
 
+		HashMap<Producto, Integer> stockSupuesto = new HashMap<>();
+		stockSupuesto.put(chocolate, Constantes.STOCK_MINIMO);
+		stockSupuesto.put(kitkat, Constantes.STOCK_MINIMO - 3);
+		stockSupuesto.put(bocata, 17);
 
-    	HashMap<Producto,Integer> stockSupuesto = new HashMap<>();
-    	stockSupuesto.put(chocolate, Constantes.STOCK_MINIMO);
-    	stockSupuesto.put(kitkat, Constantes.STOCK_MINIMO - 3);
-    	stockSupuesto.put(bocata, 17);
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		Map<Producto, Integer> stockActual = m.consultarStock();
 
-    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	Map<Producto,Integer> stockActual = m.consultarStock();
+		assertEquals(stockActual, stockSupuesto);
+	}
 
-    	assertEquals(stockActual, stockSupuesto);
-    }
+	@Test
+	@DisplayName("Actualizar Stock")
+	void testActualizarStock() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		stock.put(chocolate, Constantes.STOCK_MAXIMO);
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		m.venta("Chocolate");
 
-    @Test
-    @DisplayName("Actualizar Stock")
-    void testActualizarStock() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
-    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
-    	stock.put(chocolate, Constantes.STOCK_MAXIMO);
-    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	m.venta("Chocolate");
+		assertTrue(m.consultarStock().get(chocolate) == 19);
+	}
 
-    	assertTrue(m.consultarStock().get(chocolate) == 19);
-    }
-
-    @Test
-    @DisplayName("Elemento no existente, venta")
-    void testNoSuchElement() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
-    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
-    }
+	@Test
+	@DisplayName("Elemento no existente, venta")
+	void testNoSuchElement() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		assertThrows(NoSuchElementException.class, () -> m.venta("Chocolate"));
+	}
 
 	@Test
     @DisplayName("No coincidencia al recorrer el hashMap")
@@ -126,58 +124,60 @@ public class MaquinaTest {
     }
 	
 	@Test
-    @DisplayName("Coincidencia al recorrer el hashMap")
-    void hashMapConCoincidencia() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
+	@DisplayName("Coincidencia al recorrer el hashMap")
+	void hashMapConCoincidencia() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
 		stock.put(new Producto("Chocolate", (float) 6.99, 1), Constantes.STOCK_MAXIMO);
     	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
     	assertThrows(NoSuchElementException.class, () -> m.venta("Pepsi"));
     }
 
-    @Test
-    @DisplayName("Cantidad insuficiente, venta")
-    void testIllegalState() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
-    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
-    	stock.put(chocolate, 0);
-    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	assertThrows(IllegalStateException.class, () -> m.venta("Chocolate"));
-    }
+	@Test
+	@DisplayName("Cantidad insuficiente, venta")
+	void testIllegalState() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		stock.put(chocolate, 0);
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		assertThrows(IllegalStateException.class, () -> m.venta("Chocolate"));
+	}
 
-    @Test
-    @DisplayName("Consultar Reposiciones")
-    void testConsultarReposiciones() {
-    	HashMap<Producto,Integer> stock = new HashMap<>();
-    	Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
-    	Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
-    	Producto bocata = new Producto("Bocata", (float) 40.0, 3);
+	@Test
+	@DisplayName("Consultar Reposiciones")
+	void testConsultarReposiciones() {
+		HashMap<Producto, Integer> stock = new HashMap<>();
+		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
+		Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
+		Producto bocata = new Producto("Bocata", (float) 40.0, 3);
 
-    	stock.put(chocolate, Constantes.STOCK_MINIMO);
-    	stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
-    	stock.put(bocata, 17);
+		stock.put(chocolate, Constantes.STOCK_MINIMO);
+		stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
+		stock.put(bocata, 17);
 
-    	/*HashMap<Producto,Integer> reposicionesSupuestas = new HashMap<>();
-    	reposicionesSupuestas.put(chocolate, 15);
-    	reposicionesSupuestas.put(kitkat, 18);*/
+		/*
+		 * HashMap<Producto,Integer> reposicionesSupuestas = new HashMap<>();
+		 * reposicionesSupuestas.put(chocolate, 15);
+		 * reposicionesSupuestas.put(kitkat, 18);
+		 */
 
-    	Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
-    	Map<Producto,Integer> reposiciones = m.consultarReposiciones();
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
+		Map<Producto, Integer> reposiciones = m.consultarReposiciones();
 
-    	assertFalse(reposiciones.containsKey(bocata));
-    	assertEquals(2, reposiciones.size());
-    }
+		assertFalse(reposiciones.containsKey(bocata));
+		assertEquals(2, reposiciones.size());
+	}
 
 	@Test
 	@DisplayName("Recarga")
 	void testRecarga() {
-		HashMap<Producto,Integer> stock = new HashMap<>();
+		HashMap<Producto, Integer> stock = new HashMap<>();
 		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
 		Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
 
 		stock.put(chocolate, Constantes.STOCK_MINIMO);
 		stock.put(kitkat, Constantes.STOCK_MINIMO - 3);
 
-		Maquina m = new Maquina(1, stock, new Coordenadas(68.98,27.124,500.85), maquinaDAO);
+		Maquina m = new Maquina(1, stock, new Coordenadas(68.98, 27.124, 500.85), maquinaDAO);
 
 		m.recarga(m.consultarReposiciones().keySet().stream().toList());
 
@@ -222,16 +222,3 @@ public class MaquinaTest {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
