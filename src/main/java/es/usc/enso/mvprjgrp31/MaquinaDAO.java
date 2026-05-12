@@ -79,16 +79,23 @@ public class MaquinaDAO {
     }
 
     public Instant calcularReposicionProducto(int idMaquina, Producto producto) {
-        Instant previo = Instant.now().minusSeconds(2500000);
-        Long media = 0L;
-        for (Instant tiempo : getReposicionesProducto(idMaquina, producto)) {
-            Long diferencia = tiempo.toEpochMilli() - previo.toEpochMilli();
-            media += diferencia / getReposicionesProducto(idMaquina, producto).size();
+        List<Instant> reposiciones = getReposicionesProducto(idMaquina, producto);
+        int n = reposiciones.size();
+
+        // Con un solo registro no hay intervalo entre reposiciones;
+        // se usa un periodo por defecto de 2 500 000 segundos (~29 días).
+        if (n == 1) {
+            return reposiciones.get(0).plusSeconds(2500000);
         }
 
-        Long proxima = getReposicionesProducto(idMaquina, producto).getLast().toEpochMilli() + media;
+        // Media de los intervalos entre reposiciones consecutivas
+        long totalDiff = 0L;
+        for (int i = 1; i < n; i++) {
+            totalDiff += reposiciones.get(i).toEpochMilli() - reposiciones.get(i - 1).toEpochMilli();
+        }
+        long media = totalDiff / (n - 1);
 
-        return Instant.ofEpochMilli(proxima);
+        return Instant.ofEpochMilli(reposiciones.getLast().toEpochMilli() + media);
     }
 
     public Map<Producto, Instant> calcularProximaReposicion(int idMaquina) {

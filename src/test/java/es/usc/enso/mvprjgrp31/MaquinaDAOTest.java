@@ -298,40 +298,90 @@ public class MaquinaDAOTest {
 			Map<Producto, Integer> stockMucho = new HashMap<>();
 			stockMucho.put(producto, 21); // Excede STOCK_MAXIMO (20)
 
-			Maquina lejana = new Maquina(2, stockMucho, new Coordenadas(0.1, 0, 0), maquinaDAO);
-			maquinaDAO.addMaquina(lejana);
+			maquinaDAO.addMaquina(new Maquina(2, stockMucho, new Coordenadas(0, 0, 0), maquinaDAO));
 
 			Map<Producto, Integer> stockBajo = new HashMap<>();
 			stockBajo.put(producto, 5); // STOCK_MINIMO
-			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 0), maquinaDAO);
-			maquinaDAO.addMaquina(obj);
-
-			maquinaDAO.clear();
-			maquinaDAO.addMaquina(new Maquina(2, stockMucho, new Coordenadas(0, 0, 0), maquinaDAO));
 			maquinaDAO.addMaquina(new Maquina(1, stockBajo, new Coordenadas(0.1, 0, 0), maquinaDAO));
 
 			assertEquals("DISTANCIA_EXCESIVA", maquinaDAO.sugerirDesplazamientoStock(1, producto));
 		}
 
         @Test
-		@DisplayName("Retorna TRANSFERENCIA_VIABLE si hay excedente y está cerca (<1000m)")
-		void testTransferenciaOk() throws MachineNotFoundException {
-			// 1. Limpiamos para asegurar que no hay interferencias
-			maquinaDAO.clear();
+        @DisplayName("Altitud: ambas máquinas ≤ 2500 permite transferencia")
+        void testAltitudAmbaBaja() throws MachineNotFoundException {
+            maquinaDAO.clear();
 
-			// 2. Máquina Objetivo (ID: 1) en (0,0,0)
+            Map<Producto, Integer> stockBajo = new HashMap<>();
+            stockBajo.put(producto, Constantes.STOCK_MINIMO);
+            Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 1500), maquinaDAO);
+            maquinaDAO.addMaquina(obj);
+
+            Map<Producto, Integer> stockMucho = new HashMap<>();
+            stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+            Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2000), maquinaDAO);
+            maquinaDAO.addMaquina(cercana);
+
+            assertEquals("TRANSFERENCIA_VIABLE",
+                    maquinaDAO.sugerirDesplazamientoStock(1, producto));
+        }
+
+		@Test
+		@DisplayName("Altitud: ambas máquinas > 2500 requiere transporte especial")
+		void testAltitudAmbaMayorQue2500() throws MachineNotFoundException {
+			maquinaDAO.clear();
 			Map<Producto, Integer> stockBajo = new HashMap<>();
-			stockBajo.put(producto, Constantes.STOCK_MINIMO); // 5
-			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 0), maquinaDAO);
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 3000), maquinaDAO);
 			maquinaDAO.addMaquina(obj);
 
-			// 3. Máquina con Excedente (ID: 2) MUY cerca
 			Map<Producto, Integer> stockMucho = new HashMap<>();
-			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1); // 21
-			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 0), maquinaDAO);
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2600), maquinaDAO);
 			maquinaDAO.addMaquina(cercana);
 
-			assertEquals("TRANSFERENCIA_VIABLE", maquinaDAO.sugerirDesplazamientoStock(1, producto));
+			assertEquals("REQUIERE_TRANSPORTE_ESPECIAL_ALTITUD",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
+		}
+
+		@Test
+		@DisplayName("Altitud: objetivo > 2500 pero cercana ≤ 2500 permite transferencia")
+		void testAltitudObjetivoAlto() throws MachineNotFoundException {
+			maquinaDAO.clear();
+			Map<Producto, Integer> stockBajo = new HashMap<>();
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			// obj > 2500 m
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 3000), maquinaDAO);
+			maquinaDAO.addMaquina(obj);
+
+			Map<Producto, Integer> stockMucho = new HashMap<>();
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			// cercana ≤ 2500 m, diferencia de altitud = 600 m < 1000 m (umbral de distancia)
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2400), maquinaDAO);
+			maquinaDAO.addMaquina(cercana);
+
+			assertEquals("TRANSFERENCIA_VIABLE",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
+		}
+
+		@Test
+		@DisplayName("Altitud: objetivo ≤ 2500 pero cercana > 2500 permite transferencia")
+		void testAltitudCercanaAlta() throws MachineNotFoundException {
+			maquinaDAO.clear();
+			Map<Producto, Integer> stockBajo = new HashMap<>();
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			// obj ≤ 2500 m, diferencia de altitud = 400 m < 1000 m (umbral de distancia)
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 2200), maquinaDAO);
+			maquinaDAO.addMaquina(obj);
+
+			Map<Producto, Integer> stockMucho = new HashMap<>();
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			// cercana > 2500 m
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2600), maquinaDAO);
+			maquinaDAO.addMaquina(cercana);
+
+			assertEquals("TRANSFERENCIA_VIABLE",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
 		}
 	}
 
