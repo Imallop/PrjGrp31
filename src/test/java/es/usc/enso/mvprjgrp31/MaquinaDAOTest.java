@@ -5,15 +5,24 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.junit.jupiter.api.AfterEach;
-
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -53,7 +62,7 @@ public class MaquinaDAOTest {
     }
 
     @Test
-    @DisplayName("add y get dan la misma")
+	@DisplayName("MaquinaDAO - Add/Get: Misma instancia")
     void addYGetMismaInstancia() throws Exception {
         // Arrange
         when(maquinaMock.getId()).thenReturn(7);
@@ -70,7 +79,7 @@ public class MaquinaDAOTest {
     }
 
     @ParameterizedTest(name = "id {0} -> pos {1}")
-    @DisplayName("getMaquina por id (csv)")
+	@DisplayName("MaquinaDAO - GetMaquina: Por id (CSV)")
     @CsvSource({
             "1, 0",
             "2, 1",
@@ -97,12 +106,15 @@ public class MaquinaDAOTest {
     }
 
     @Test
-    @DisplayName("getMaquina falla si no encuentra (con fail)")
+	@DisplayName("MaquinaDAO - GetMaquina: No existe (con fail)")
     void getMaquinaNoExisteConFail() {
+		// Arrange
         try {
+			// Act
             maquinaDAO.getMaquina(99);
             fail("Se esperaba MachineNotFoundException y no se lanzó ninguna excepción");
         } catch (MachineNotFoundException ex) {
+			// Assert
             assertTrue(ex.getMessage().contains("Machine not found"));
             assertNull(ex.getCause());
         } catch (Exception ex) {
@@ -111,7 +123,7 @@ public class MaquinaDAOTest {
     }
 
 	@Test
-	@DisplayName("getMaquinaCercana devuelve máquina más cercana")
+	@DisplayName("MaquinaDAO - GetMaquinaCercana: Devuelve la mas cercana")
 	void cercanaDevuelveMasCerca() throws Exception {
 		// Arrange
 		Coordenadas origen = new Coordenadas(0.0, 0.0, 0.0);
@@ -148,7 +160,7 @@ public class MaquinaDAOTest {
 	}
 
 	@Test
-	@DisplayName("cercana sin maquinas")
+	@DisplayName("MaquinaDAO - GetMaquinaCercana: Sin máquinas")
 	void cercanaSinMaquinas() {
 		// Arrange
 		Coordenadas origen = new Coordenadas(0.0, 0.0, 0.0);
@@ -164,18 +176,24 @@ public class MaquinaDAOTest {
 		assertTrue(ex.getMessage().contains("Machine not found near coordinates"));
 	}
 
-    @Test
-    void getMaquinasDevuelveCopia() {
-        MaquinaDAO maquinaDAO = MaquinaDAO.getInstance();
+	@Test
+	@DisplayName("MaquinaDAO - GetMaquinas: Copia defensiva")
+	void getMaquinasDevuelveCopia() {
+		// Arrange
+		MaquinaDAO maquinaDAO = MaquinaDAO.getInstance();
 
-        ArrayList<Maquina> lista1 = maquinaDAO.getMaquinas();
-        ArrayList<Maquina> lista2 = maquinaDAO.getMaquinas();
+		// Act
+		ArrayList<Maquina> lista1 = maquinaDAO.getMaquinas();
+		ArrayList<Maquina> lista2 = maquinaDAO.getMaquinas();
 
-        assertNotSame(lista1, lista2);
-    }
+		// Assert
+		assertNotSame(lista1, lista2);
+	}
 
-    @Test
-    void tiempoMaximoCalcularReposicion() {
+	@Test
+	@DisplayName("MaquinaDAO - CalcularProximaReposicion: Tiempo máximo")
+	void tiempoMaximoCalcularReposicion() {
+		// Arrange
         HashMap<Producto, Integer> stock = new HashMap<>();
         Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
         Producto kitkat = new Producto("KitKat", (float) 30.0, 2);
@@ -188,22 +206,28 @@ public class MaquinaDAOTest {
         Maquina maquina = new Maquina(1, stock, new Coordenadas(0.0, 0.0, 0.0), maquinaDAO);
         maquinaDAO.addMaquina(maquina);
 
+        // Act
         maquina.recarga(new ArrayList<>(maquina.consultarReposiciones().keySet()));
 
+        // Assert
         assertTimeoutPreemptively(Duration.ofMillis(10), () -> {
             maquinaDAO.calcularProximaReposicion(1).entrySet();
         });
     }
  
 	@Test
+	@DisplayName("MaquinaDAO - CalcularReposicionProducto: Un registro")
 	void d9_calcularReposicion_unRegistro() {
+		// Arrange
 		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
 		Instant ahora = Instant.now();
 		maquinaDAO.registrarReposicion(1, chocolate, ahora);
  
 		// El bucle itera una vez (TRUE una vez, luego FALSE al acabar)
+		// Act
 		Instant proxima = maquinaDAO.calcularReposicionProducto(1, chocolate);
  
+		// Assert
 		assertNotNull(proxima, "Con un registro el resultado no debe ser null");
 		assertTrue(proxima.isAfter(ahora),
 				"La próxima reposición estimada debe estar después del último registro conocido");
@@ -232,25 +256,28 @@ public class MaquinaDAOTest {
 	}
 
 	@Test
-	@DisplayName("Debe lanzar Exception si la máquina objetivo no existe")
+	@DisplayName("MaquinaDAO - SugerirDesplazamiento: Máquina objetivo no existe")
 	void testMaquinaNoExiste() {
+		// Act & Assert
 		assertThrows(MachineNotFoundException.class, () ->
 			maquinaDAO.sugerirDesplazamientoStock(999, producto));
 	}
 
 	@Test
-	@DisplayName("Retorna STOCK_SUFICIENTE si el stock > STOCK_MINIMO")
+	@DisplayName("MaquinaDAO - SugerirDesplazamiento: Stock suficiente")
 	void testStockSuficiente() throws MachineNotFoundException {
+		// Arrange
 		Map<Producto, Integer> stock = new HashMap<>();
 		stock.put(producto, Constantes.STOCK_MINIMO + 1); // 6
 		Maquina m = new Maquina(1, stock, new Coordenadas(0, 0, 0), maquinaDAO);
 		maquinaDAO.addMaquina(m);
 
+		// Act & Assert
 		assertEquals("STOCK_SUFICIENTE", maquinaDAO.sugerirDesplazamientoStock(1, producto));
 	}
 
     @Nested
-    @DisplayName("Escenarios de Máquina Cercana y Transferencia")
+	@DisplayName("MaquinaDAO - Escenarios de máquina cercana y transferencia")
     class EscenariosTransferencia {
 
         @BeforeEach
@@ -262,14 +289,16 @@ public class MaquinaDAOTest {
         }
 
         @Test
-        @DisplayName("Retorna SIN_PROVEEDOR_CERCANO si solo existe la máquina objetivo")
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Sin otras máquinas")
         void testSinOtrasMaquinas() throws MachineNotFoundException {
+			// Act & Assert
             assertEquals("SIN_PROVEEDOR_CERCANO", maquinaDAO.sugerirDesplazamientoStock(1, producto));
         }
 
         @Test
-        @DisplayName("Retorna SIN_PROVEEDOR_CERCANO si la cercana no tiene excedente")
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Cercana sin excedente")
         void testCercanaSinExcedente() throws MachineNotFoundException {
+			// Arrange
             Map<Producto, Integer> stockNormal = new HashMap<>();
             stockNormal.put(producto, Constantes.STOCK_MAXIMO); // 20
 
@@ -277,51 +306,112 @@ public class MaquinaDAOTest {
             Maquina cercana = new Maquina(2, stockNormal, new Coordenadas(0.0009, 0, 0), maquinaDAO);
             maquinaDAO.addMaquina(cercana);
 
+			// Act & Assert
             assertEquals("SIN_PROVEEDOR_CERCANO", maquinaDAO.sugerirDesplazamientoStock(1, producto));
         }
 
         @Test
-		@DisplayName("Retorna DISTANCIA_EXCESIVA si hay excedente pero está lejos (>1000m)")
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Distancia excesiva")
 		void testDistanciaLejana() throws MachineNotFoundException {
+			// Arrange
 			maquinaDAO.clear();
 
 			Map<Producto, Integer> stockMucho = new HashMap<>();
 			stockMucho.put(producto, 21); // Excede STOCK_MAXIMO (20)
 
-			Maquina lejana = new Maquina(2, stockMucho, new Coordenadas(0.1, 0, 0), maquinaDAO);
-			maquinaDAO.addMaquina(lejana);
+			maquinaDAO.addMaquina(new Maquina(2, stockMucho, new Coordenadas(0, 0, 0), maquinaDAO));
 
 			Map<Producto, Integer> stockBajo = new HashMap<>();
 			stockBajo.put(producto, 5); // STOCK_MINIMO
-			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 0), maquinaDAO);
-			maquinaDAO.addMaquina(obj);
-
-			maquinaDAO.clear();
-			maquinaDAO.addMaquina(new Maquina(2, stockMucho, new Coordenadas(0, 0, 0), maquinaDAO));
 			maquinaDAO.addMaquina(new Maquina(1, stockBajo, new Coordenadas(0.1, 0, 0), maquinaDAO));
 
+			// Act & Assert
 			assertEquals("DISTANCIA_EXCESIVA", maquinaDAO.sugerirDesplazamientoStock(1, producto));
 		}
 
         @Test
-		@DisplayName("Retorna TRANSFERENCIA_VIABLE si hay excedente y está cerca (<1000m)")
-		void testTransferenciaOk() throws MachineNotFoundException {
-			// 1. Limpiamos para asegurar que no hay interferencias
-			maquinaDAO.clear();
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Altitud normal")
+        void testAltitudAmbaBaja() throws MachineNotFoundException {
+			// Arrange
+            maquinaDAO.clear();
 
-			// 2. Máquina Objetivo (ID: 1) en (0,0,0)
+            Map<Producto, Integer> stockBajo = new HashMap<>();
+            stockBajo.put(producto, Constantes.STOCK_MINIMO);
+            Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 1500), maquinaDAO);
+            maquinaDAO.addMaquina(obj);
+
+            Map<Producto, Integer> stockMucho = new HashMap<>();
+            stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+            Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2000), maquinaDAO);
+            maquinaDAO.addMaquina(cercana);
+
+			    // Act & Assert
+            assertEquals("TRANSFERENCIA_VIABLE",
+                    maquinaDAO.sugerirDesplazamientoStock(1, producto));
+        }
+
+		@Test
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Altitud extrema")
+		void testAltitudAmbaMayorQue2500() throws MachineNotFoundException {
+			// Arrange
+			maquinaDAO.clear();
 			Map<Producto, Integer> stockBajo = new HashMap<>();
-			stockBajo.put(producto, Constantes.STOCK_MINIMO); // 5
-			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 0), maquinaDAO);
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 3000), maquinaDAO);
 			maquinaDAO.addMaquina(obj);
 
-			// 3. Máquina con Excedente (ID: 2) MUY cerca
 			Map<Producto, Integer> stockMucho = new HashMap<>();
-			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1); // 21
-			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 0), maquinaDAO);
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2600), maquinaDAO);
 			maquinaDAO.addMaquina(cercana);
 
-			assertEquals("TRANSFERENCIA_VIABLE", maquinaDAO.sugerirDesplazamientoStock(1, producto));
+			// Act & Assert
+			assertEquals("REQUIERE_TRANSPORTE_ESPECIAL_ALTITUD",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
+		}
+
+		@Test
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Objetivo alto")
+		void testAltitudObjetivoAlto() throws MachineNotFoundException {
+			// Arrange
+			maquinaDAO.clear();
+			Map<Producto, Integer> stockBajo = new HashMap<>();
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			// obj > 2500 m
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 3000), maquinaDAO);
+			maquinaDAO.addMaquina(obj);
+
+			Map<Producto, Integer> stockMucho = new HashMap<>();
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			// cercana ≤ 2500 m, diferencia de altitud = 600 m < 1000 m (umbral de distancia)
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2400), maquinaDAO);
+			maquinaDAO.addMaquina(cercana);
+
+			// Act & Assert
+			assertEquals("TRANSFERENCIA_VIABLE",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
+		}
+
+		@Test
+		@DisplayName("MaquinaDAO - SugerirDesplazamiento: Cercana alta")
+		void testAltitudCercanaAlta() throws MachineNotFoundException {
+			// Arrange
+			maquinaDAO.clear();
+			Map<Producto, Integer> stockBajo = new HashMap<>();
+			stockBajo.put(producto, Constantes.STOCK_MINIMO);
+			// obj ≤ 2500 m, diferencia de altitud = 400 m < 1000 m (umbral de distancia)
+			Maquina obj = new Maquina(1, stockBajo, new Coordenadas(0, 0, 2200), maquinaDAO);
+			maquinaDAO.addMaquina(obj);
+
+			Map<Producto, Integer> stockMucho = new HashMap<>();
+			stockMucho.put(producto, Constantes.STOCK_MAXIMO + 1);
+			// cercana > 2500 m
+			Maquina cercana = new Maquina(2, stockMucho, new Coordenadas(0.00001, 0.00001, 2600), maquinaDAO);
+			maquinaDAO.addMaquina(cercana);
+
+			// Act & Assert
+			assertEquals("TRANSFERENCIA_VIABLE",
+					maquinaDAO.sugerirDesplazamientoStock(1, producto));
 		}
 	}
 
