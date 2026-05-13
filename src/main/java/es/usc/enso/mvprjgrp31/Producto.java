@@ -1,8 +1,5 @@
 package es.usc.enso.mvprjgrp31;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 public class Producto {
 
     private final String nombre;

@@ -2,6 +2,7 @@ package es.usc.enso.mvprjgrp31;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -79,16 +80,31 @@ public class MaquinaDAO {
     }
 
     public Instant calcularReposicionProducto(int idMaquina, Producto producto) {
-        Instant previo = Instant.now().minusSeconds(2500000);
-        Long media = 0L;
-        for (Instant tiempo : getReposicionesProducto(idMaquina, producto)) {
-            Long diferencia = tiempo.toEpochMilli() - previo.toEpochMilli();
-            media += diferencia / getReposicionesProducto(idMaquina, producto).size();
+
+        List<Instant> reposiciones = new ArrayList<>(getReposicionesProducto(idMaquina, producto));
+
+        if (reposiciones.isEmpty()) {
+            throw new IllegalStateException("No hay reposiciones");
         }
 
-        Long proxima = getReposicionesProducto(idMaquina, producto).getLast().toEpochMilli() + media;
+        Collections.sort(reposiciones);
 
-        return Instant.ofEpochMilli(proxima);
+        if (reposiciones.size() == 1) {
+            return reposiciones.get(0).plusSeconds(7 * 24 * 60 * 60);
+        }
+
+        long sumaIntervalos = 0;
+
+        for (int i = 1; i < reposiciones.size(); i++) {
+            sumaIntervalos += reposiciones.get(i).toEpochMilli()
+                            - reposiciones.get(i - 1).toEpochMilli();
+        }
+
+        long media = sumaIntervalos / (reposiciones.size() - 1);
+
+        Instant ultimo = reposiciones.get(reposiciones.size() - 1);
+
+        return ultimo.plusMillis(media);
     }
 
     public Map<Producto, Instant> calcularProximaReposicion(int idMaquina) {

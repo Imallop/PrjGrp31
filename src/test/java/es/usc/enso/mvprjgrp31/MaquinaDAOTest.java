@@ -9,22 +9,11 @@ import java.util.Map.Entry;
 
 import org.junit.jupiter.api.AfterEach;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -221,24 +210,25 @@ public class MaquinaDAOTest {
 	}
  
 	@Test
-	@DisplayName("D9-MANY: lista con varios registros → bucle itera N veces y calcula la media correctamente")
+	@DisplayName("D9-MANY: varios registros → media 7 días → próxima = t3 + media")
 	void d9_calcularReposicion_variosRegistros() {
-		Producto chocolate = new Producto("Chocolate", (float) 25.0, 1);
-		Instant t1 = Instant.parse("2025-01-01T10:00:00Z");
-		Instant t2 = Instant.parse("2025-01-08T10:00:00Z"); // +7 días
-		Instant t3 = Instant.parse("2025-01-15T10:00:00Z"); // +7 días
-		maquinaDAO.registrarReposicion(1, chocolate, t1);
-		maquinaDAO.registrarReposicion(1, chocolate, t2);
-		maquinaDAO.registrarReposicion(1, chocolate, t3);
- 
-		// El bucle itera 3 veces; la media entre reposiciones es 7 días
-		Instant proxima = maquinaDAO.calcularReposicionProducto(1, chocolate);
- 
-		Instant esperada = Instant.parse("2025-01-22T10:00:00Z"); // t3 + 7 días
-		long toleranciaMs = 60_000L; // ±1 minuto por aritmética entera
-		assertTrue(
-				Math.abs(proxima.toEpochMilli() - esperada.toEpochMilli()) < toleranciaMs,
-				"La próxima reposición debe ser aproximadamente t3 + media_entre_reposiciones (7 días)");
+
+	    Producto chocolate = new Producto("Chocolate", 25.0f, 1);
+
+	    Instant t1 = Instant.parse("2025-01-01T10:00:00Z");
+	    Instant t2 = Instant.parse("2025-01-08T10:00:00Z");
+	    Instant t3 = Instant.parse("2025-01-15T10:00:00Z");
+
+	    maquinaDAO.registrarReposicion(1, chocolate, t1);
+	    maquinaDAO.registrarReposicion(1, chocolate, t2);
+	    maquinaDAO.registrarReposicion(1, chocolate, t3);
+
+	    Instant proxima = maquinaDAO.calcularReposicionProducto(1, chocolate);
+
+	    // media = 7 días exactos
+	    Instant esperada = t3.plusSeconds(7 * 24 * 60 * 60);
+
+	    assertEquals(esperada, proxima);
 	}
 
 	@Test
